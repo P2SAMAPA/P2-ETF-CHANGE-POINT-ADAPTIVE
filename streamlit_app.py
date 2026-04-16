@@ -28,7 +28,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-header">SAMBA — Change‑Point Adaptive ETF Engine</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">Change‑Point Adaptive ETF Engine</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Bayesian CPD · Adaptive Lookback · Regime‑Aware Signals</div>', unsafe_allow_html=True)
 
 tab_fi, tab_eq, tab_comb = st.tabs(["FI/Commodities", "Equity Sectors", "Combined Universe"])
