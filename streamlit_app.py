@@ -2,7 +2,6 @@
 Streamlit UI for P2-ETF-CHANGE-POINT-ADAPTIVE.
 """
 import streamlit as st
-import pandas as pd
 import numpy as np
 from datetime import datetime
 import config
@@ -49,18 +48,28 @@ def format_num(v, d=2):
 
 def display_metrics(metrics):
     col1, col2, col3, col4, col5 = st.columns(5)
+
+    ann_return = metrics.get("ann_return")
+    cum_return = metrics.get("cum_return")
+
     with col1:
         st.markdown('<div class="metric-label">ANN RETURN</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-value">{format_pct(metrics.get("ann_return"))}</div>', unsafe_allow_html=True)
+        ann_str = format_pct(ann_return)
+        cum_str = format_pct(cum_return) if cum_return is not None else "—"
+        st.markdown(f'<div class="metric-value">{ann_str} <span style="font-size:0.9rem; color:#6B7280;">({cum_str})</span></div>', unsafe_allow_html=True)
+
     with col2:
         st.markdown('<div class="metric-label">ANN VOL</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-value">{format_pct(metrics.get("ann_vol"))}</div>', unsafe_allow_html=True)
+
     with col3:
         st.markdown('<div class="metric-label">SHARPE</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-value">{format_num(metrics.get("sharpe"))}</div>', unsafe_allow_html=True)
+
     with col4:
         st.markdown('<div class="metric-label">MAX DD</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-value">{format_pct(metrics.get("max_dd"))}</div>', unsafe_allow_html=True)
+
     with col5:
         st.markdown('<div class="metric-label">HIT RATE</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-value">{format_pct(metrics.get("hit_rate"))}</div>', unsafe_allow_html=True)
@@ -90,10 +99,10 @@ def display_global_card(data):
         st.markdown(f'<div class="meta-text">Signal for {next_day.strftime("%Y-%m-%d")} · Generated {gen_time}</div>', unsafe_allow_html=True)
         st.markdown('<div class="source-badge">Source: Global (80/10/10)</div>', unsafe_allow_html=True)
     with col2:
-        pass  # No 2nd/3rd place placeholders
+        pass
 
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="meta-text">Test: {test_start} → {test_end}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="meta-text">Test: {test_start} → {test_end} ({metrics.get("n_days", "—")} days)</div>', unsafe_allow_html=True)
     display_metrics(metrics)
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -128,7 +137,7 @@ def display_adaptive_card(data):
         st.markdown(f'<div class="meta-text">Lookback: {lookback} days</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="meta-text">Test: {test_start} → {test_end}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="meta-text">Test: {test_start} → {test_end} ({metrics.get("n_days", "—")} days)</div>', unsafe_allow_html=True)
     display_metrics(metrics)
     st.markdown('</div>', unsafe_allow_html=True)
 
