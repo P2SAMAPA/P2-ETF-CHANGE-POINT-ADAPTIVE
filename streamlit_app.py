@@ -19,7 +19,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .sub-header { font-size: 1rem; color: #6B7280; margin-bottom: 2rem; font-weight: 400; }
 .card { background-color: #FFFFFF; border-radius: 16px; padding: 1.8rem 2rem; margin: 1rem 0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #F0F2F5; }
 .ticker-large { font-size: 4.5rem; font-weight: 700; margin: 0; line-height: 1.1; color: #111827; }
-.conviction { font-size: 1.2rem; color: #059669; font-weight: 500; margin: 0.3rem 0 0.5rem 0; }
+.pred-return { font-size: 1.4rem; color: #059669; font-weight: 500; margin: 0.3rem 0 0.5rem 0; }
 .meta-text { color: #6B7280; font-size: 0.9rem; }
 .source-badge { background-color: #F3F4F6; display: inline-block; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; color: #374151; margin-top: 0.5rem; }
 .section-divider { margin: 1.5rem 0; border-top: 1px solid #E5E7EB; }
@@ -28,14 +28,24 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-header">Change‑Point Adaptive ETF Engine</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">SAMBA — Change‑Point Adaptive ETF Engine</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Bayesian CPD · Adaptive Lookback · Regime‑Aware Signals</div>', unsafe_allow_html=True)
 
 tab_fi, tab_eq, tab_comb = st.tabs(["FI/Commodities", "Equity Sectors", "Combined Universe"])
 results = load_latest_result()
 
-def format_pct(v): return f"{v*100:.1f}%" if v is not None and not np.isnan(v) else "—"
-def format_num(v, d=2): return f"{v:.{d}f}" if v is not None and not np.isnan(v) else "—"
+
+def format_pct(v):
+    if v is None or (isinstance(v, float) and np.isnan(v)):
+        return "—"
+    return f"{v*100:.1f}%"
+
+
+def format_num(v, d=2):
+    if v is None or (isinstance(v, float) and np.isnan(v)):
+        return "—"
+    return f"{v:.{d}f}"
+
 
 def display_metrics(metrics):
     col1, col2, col3, col4, col5 = st.columns(5)
@@ -55,57 +65,73 @@ def display_metrics(metrics):
         st.markdown('<div class="metric-label">HIT RATE</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-value">{format_pct(metrics.get("hit_rate"))}</div>', unsafe_allow_html=True)
 
+
 def display_global_card(data):
     if not data or not data.get("ticker"):
         st.info("⏳ Waiting for training output...")
         return
+
     ticker = data["ticker"]
+    pred_return = data.get("pred_return")
     metrics = data.get("metrics", {})
     test_start = data.get("test_start", "")
     test_end = data.get("test_end", "")
+
     next_day = next_trading_day(datetime.utcnow())
     gen_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    col1, col2 = st.columns([2,1])
+    col1, col2 = st.columns([2, 1])
     with col1:
         st.markdown(f'<div class="ticker-large">{ticker}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="conviction">100.0% conviction</div>', unsafe_allow_html=True)
+        if pred_return is not None:
+            pred_str = f"{pred_return*100:.2f}%"
+            st.markdown(f'<div class="pred-return">Predicted Return: {pred_str}</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="meta-text">Signal for {next_day.strftime("%Y-%m-%d")} · Generated {gen_time}</div>', unsafe_allow_html=True)
         st.markdown('<div class="source-badge">Source: Global (80/10/10)</div>', unsafe_allow_html=True)
     with col2:
-        st.markdown('<div class="meta-text">2nd: — 0.0%</div>', unsafe_allow_html=True)
-        st.markdown('<div class="meta-text">3rd: — 0.0%</div>', unsafe_allow_html=True)
+        pass  # No 2nd/3rd place placeholders
+
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown(f'<div class="meta-text">Test: {test_start} → {test_end}</div>', unsafe_allow_html=True)
     display_metrics(metrics)
     st.markdown('</div>', unsafe_allow_html=True)
 
+
 def display_adaptive_card(data):
     if not data or not data.get("ticker"):
         st.info("⏳ Waiting for training output...")
         return
+
     ticker = data["ticker"]
+    pred_return = data.get("pred_return")
     metrics = data.get("metrics", {})
     cp_date = data.get("change_point_date", "unknown")
     lookback = data.get("lookback_days", 0)
     test_start = data.get("test_start", "")
     test_end = data.get("test_end", "")
+
     next_day = next_trading_day(datetime.utcnow())
     gen_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    col1, col2 = st.columns([2,1])
+    col1, col2 = st.columns([2, 1])
     with col1:
         st.markdown(f'<div class="ticker-large">{ticker}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="conviction">100.0% conviction</div>', unsafe_allow_html=True)
+        if pred_return is not None:
+            pred_str = f"{pred_return*100:.2f}%"
+            st.markdown(f'<div class="pred-return">Predicted Return: {pred_str}</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="meta-text">Signal for {next_day.strftime("%Y-%m-%d")} · Generated {gen_time}</div>', unsafe_allow_html=True)
         st.markdown('<div class="source-badge">Source: Adaptive Window</div>', unsafe_allow_html=True)
     with col2:
         st.markdown(f'<div class="meta-text">Change Point: {cp_date}</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="meta-text">Lookback: {lookback} days</div>', unsafe_allow_html=True)
+
     st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
     st.markdown(f'<div class="meta-text">Test: {test_start} → {test_end}</div>', unsafe_allow_html=True)
     display_metrics(metrics)
     st.markdown('</div>', unsafe_allow_html=True)
+
 
 # Render tabs
 for tab, key in [(tab_fi, "fi"), (tab_eq, "equity"), (tab_comb, "combined")]:
@@ -114,7 +140,7 @@ for tab, key in [(tab_fi, "fi"), (tab_eq, "equity"), (tab_comb, "combined")]:
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("### Global Training")
-            display_global_card(results.get(key, {}).get("global"))
+            display_global_card(results.get(key, {}).get("global", {}))
         with col2:
             st.markdown("### Adaptive Window")
-            display_adaptive_card(results.get(key, {}).get("adaptive"))
+            display_adaptive_card(results.get(key, {}).get("adaptive", {}))
