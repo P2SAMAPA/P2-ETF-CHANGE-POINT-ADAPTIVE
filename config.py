@@ -25,17 +25,14 @@ TRAIN_RATIO = 0.8
 VAL_RATIO = 0.1
 TEST_RATIO = 0.1
 MIN_TRAIN_DAYS = 252 * 2
+MIN_TEST_DAYS = 63                # Minimum trading days for test window (~3 months)
 TRADING_DAYS_PER_YEAR = 252
 
 # Change Point Detection parameters (ruptures.Pelt)
-CP_PENALTY = 3.0               # Higher = fewer change points
-CP_MODEL = "l2"                # Detects shifts in mean
-CP_MIN_DAYS_BETWEEN = 20       # Minimum days between change points
-CP_PROB_THRESHOLD = 0.7        # Not used with PELT; kept for interface consistency
-
-# Adaptive window: use change point if at least this fraction of ETFs agree
-CP_CONSENSUS_FRACTION = 0.5
+CP_PENALTY = 3.0                  # Higher = fewer change points
+CP_MODEL = "l2"                   # Detects shifts in mean
+CP_MIN_DAYS_BETWEEN = 20          # Minimum days between change points
+CP_CONSENSUS_FRACTION = 0.5       # Fraction of ETFs that must agree on a change point
 
 # Model parameters
-MODEL_ALPHA = 1.0              # Ridge regularization (tuned by RidgeCV)
 LOOKBACK_FEATURES = [1, 2, 3, 5, 10, 21]  # Lagged returns as features
