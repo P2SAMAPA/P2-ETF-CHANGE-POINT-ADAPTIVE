@@ -3,7 +3,6 @@ Global and Adaptive Window training orchestration.
 """
 import pandas as pd
 import numpy as np
-from datetime import datetime
 import config
 from data_manager import load_master_data, prepare_data, get_universe_returns
 from change_point_detector import universe_adaptive_start_date
@@ -32,12 +31,17 @@ def evaluate_etf(ticker: str, returns: pd.DataFrame) -> dict:
 
     hit_rate = (ret_series > 0).mean()
 
+    # Cumulative return over the test period
+    cum_return = (1 + ret_series).prod() - 1
+
     return {
         "ann_return": ann_return,
         "ann_vol": ann_vol,
         "sharpe": sharpe,
         "max_dd": max_dd,
         "hit_rate": hit_rate,
+        "cum_return": cum_return,
+        "n_days": len(ret_series),
     }
 
 
@@ -85,8 +89,12 @@ def train_adaptive(universe: str, returns: pd.DataFrame) -> dict:
     cp_date = universe_adaptive_start_date(returns)
     print(f"  Adaptive window starts: {cp_date.date()}")
 
-    # Use data from cp_date up to 20 days before the end (to allow a test period)
-    end_date = returns.index[-1] - pd.Timedelta(days=20)
+    # Use data from cp_date up to MIN_TEST_DAYS before the end
+    end_date = returns.index[-1] - pd.Timedelta(days=config.MIN_TEST_DAYS)
+    if end_date <= cp_date:
+        # Not enough data for a full test window; use a smaller offset
+        end_date = returns.index[-1] - pd.Timedelta(days=10)
+        print(f"  Warning: Insufficient data for {config.MIN_TEST_DAYS}-day test; using { (returns.index[-1] - end_date).days } days.")
     if end_date <= cp_date:
         end_date = returns.index[-1]
 
